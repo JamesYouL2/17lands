@@ -44,7 +44,7 @@ df.columns
 
 #X=df[['Avg. Seen At', 'Avg. Taken At', 'Win Rate', 'Picked', 'Seen', 'Games', '# Seen', '# Picked', '# Games'
 #,'Rarity_common','Rarity_uncommon','Rarity_rare','Rarity_mythic']]
-X=df[['Seen', 'SqrtGames', 'Rarity_common', 'Rarity_uncommon', 'Rarity_mythic']]
+X=df[['Seen', 'Games', 'SqrtGames', 'Rarity_common', 'Rarity_uncommon', 'Rarity_mythic']]
 
 y=df['Final Rating']
 
@@ -66,7 +66,7 @@ wks = sh[1]
 
 wks.set_dataframe(df.sort_values('Predicted Rating', ascending=False),(1,1))
 
-print(regressor.coef_)
+print(regressor.coef_,X.columns)
 
 ### Exploratory analysis
 ### NOT NECESSARY TO RUN MODEL
@@ -76,6 +76,11 @@ high_score=0
 #Variable to store the optimum features
 nof=0           
 score_list =[]
+cols=list(df_17l.columns)
+cols.remove('Name')
+cols.remove('Color')
+X=df[cols]
+
 for n in range(len(nof_list)):
     X_train, X_test, y_train, y_test = train_test_split(X,y, test_size = 0.3, random_state = 1)
     model = LinearRegression()
@@ -92,7 +97,7 @@ for n in range(len(nof_list)):
 print("Score with %d features: %f" % (nof, high_score))
 
 #Initializing RFE model
-rfe = RFE(model, 7)             #Transforming data using RFE
+rfe = RFE(model, 6)             #Transforming data using RFE
 X_rfe = rfe.fit_transform(X,y)  #Fitting the data to model
 model.fit(X_rfe,y)
 temp = pd.Series(rfe.support_, index=list(X.columns))

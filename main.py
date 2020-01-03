@@ -24,18 +24,14 @@ from lightgbm import LGBMRegressor
 from bs4 import BeautifulSoup
 
 c = pygsheets.authorize(service_file="./Test.json")
-page = requests.get("https://www.17lands.com/color_ratings")
-
-soup = BeautifulSoup(page.content, 'html.parser')
-
 
 df_k=pd.read_excel("./Karsten.xlsx")
-df_17l=pd.read_excel("./17lands.xlsx")
-df_17l=df_17l.replace("-", 0.4)
+df_17lorig=pd.read_excel("./17lands.xlsx")
+df_17lorig=df_17lorig.replace("-", 0.4)
 
-datadf=df_17l.iloc[2::2]
+datadf=df_17lorig.iloc[1::2]
 datadf=datadf.drop('Name',axis=1)
-carddf=df_17l.iloc[1::2]
+carddf=df_17lorig.iloc[0::2]
 carddf=carddf['Name']
 datadf.index = datadf.index-1
 df_17l=pd.concat([carddf,datadf], axis=1)
@@ -45,16 +41,10 @@ df_17l["Picked"]=df_17l.groupby('Rarity')['# Picked'].apply(lambda x: x / x.mean
 df_17l["Games"]=df_17l.groupby('Rarity')['# Games'].apply(lambda x: x / x.mean())
 df_17l["SqrtGames"]=np.sqrt(df_17l["Games"])
 
-pyplot.show(qqplot(df_17l["Seen"], line='s'))
-pyplot.show(qqplot(np.sqrt(df_17l["Games"]), line='s'))
-
 df_17l = pd.get_dummies(df_17l, prefix_sep="_", columns=['Rarity'])
-
-
 
 #Merge DFs
 df=pd.merge(df_k,df_17l,on="Name")
-df.columns
 
 #X=df[['Avg. Seen At', 'Avg. Taken At', 'Win Rate', 'Picked', 'Seen', 'Games', '# Seen', '# Picked', '# Games'
 #,'Rarity_common','Rarity_uncommon','Rarity_rare','Rarity_mythic']]
@@ -80,7 +70,7 @@ wks = sh[1]
 
 wks.set_dataframe(df.sort_values('Predicted Rating', ascending=False),(1,1))
 
-print(regressor.coef_,X.columns)
+#print(regressor.coef_,X.columns)
 
 ### Exploratory analysis
 ### NOT NECESSARY TO RUN MODEL

@@ -50,7 +50,7 @@ df=pd.merge(df_k,df_17l,on="Name")
 #,'Rarity_common','Rarity_uncommon','Rarity_rare','Rarity_mythic']]
 X=df[['Seen', 'Games', 'Rarity_common', 'Rarity_uncommon', 'Rarity_mythic']]
 
-y=df['Final Rating']
+y=df['Final Grade']
 
 regressor = LGBMRegressor()  
 regressor.fit(X,y) #training the algorithm
@@ -67,6 +67,8 @@ gc = pygsheets.authorize(service_file='./Test.json')
 #open the google spreadsheet (where 'PY to Gsheet Test' is the name of my sheet)
 sh = gc.open('ArenaDraft')
 wks = sh[1]
+
+df['Diff'] = df['Predicted Rating']-df['Final Grade']
 
 wks.set_dataframe(df.sort_values('Predicted Rating', ascending=False),(1,1))
 

@@ -22,6 +22,7 @@ from statsmodels.graphics.gofplots import qqplot
 from matplotlib import pyplot
 from lightgbm import LGBMRegressor
 from bs4 import BeautifulSoup
+from pprint import pprint
 
 c = pygsheets.authorize(service_file="./Test.json")
 
@@ -36,6 +37,11 @@ carddf=carddf['Name']
 datadf.index = datadf.index-1
 df_17l=pd.concat([carddf,datadf], axis=1)
 
+df_17l["# Wins"] = df_17l['# Games'] * df_17l['Win Rate']
+df_17l["# Losses"] = df_17l['# Games'] * (1 - df_17l['Win Rate'])
+
+df_17l["Wins"]=df_17l.groupby('Rarity')['# Wins'].apply(lambda x: x / x.mean())
+df_17l["Losses"]=df_17l.groupby('Rarity')['# Losses'].apply(lambda x: x / x.mean())
 df_17l["Seen"]=df_17l.groupby('Rarity')['# Seen'].apply(lambda x: x / x.mean())
 df_17l["Picked"]=df_17l.groupby('Rarity')['# Picked'].apply(lambda x: x / x.mean())
 df_17l["Games"]=df_17l.groupby('Rarity')['# Games'].apply(lambda x: x / x.mean())
@@ -50,7 +56,7 @@ df=pd.merge(df_k,df_17l,on="Name")
 #,'Rarity_common','Rarity_uncommon','Rarity_rare','Rarity_mythic']]
 X=df[['Seen', 'Games', 'Rarity_common', 'Rarity_uncommon', 'Rarity_mythic']]
 
-y=df['Final Grade']
+y=df['Frank']
 
 regressor = LGBMRegressor()  
 regressor.fit(X,y) #training the algorithm
@@ -61,14 +67,17 @@ print(r2_score(y,y_pred))
 
 df['Predicted Rating'] = pd.DataFrame(y_pred)
 
+df['Diff'] = df['Predicted Rating']-df['Final Grade']
+
+pprint(df.sort_values('Predicted Rating', ascending=False).head(10))
+pprint(df.loc[df['Rarity']=='Common'].sort_values('Diff', ascending=False).head(10))
+
 #Google Spreadsheet
 gc = pygsheets.authorize(service_file='./Test.json')
 
 #open the google spreadsheet (where 'PY to Gsheet Test' is the name of my sheet)
 sh = gc.open('ArenaDraft')
 wks = sh[1]
-
-df['Diff'] = df['Predicted Rating']-df['Final Grade']
 
 wks.set_dataframe(df.sort_values('Predicted Rating', ascending=False),(1,1))
 
@@ -103,7 +112,7 @@ for n in range(len(nof_list)):
 print("Score with %d features: %f" % (nof, high_score))
 
 #Initializing RFE model
-rfe = RFE(model, 6)             #Transforming data using RFE
+rfe = RFE(model, 5)             #Transforming data using RFE
 X_rfe = rfe.fit_transform(X,y)  #Fitting the data to model
 model.fit(X_rfe,y)
 temp = pd.Series(rfe.support_, index=list(X.columns))

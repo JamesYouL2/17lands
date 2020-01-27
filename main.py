@@ -56,7 +56,7 @@ df=pd.merge(df_k,df_17l,on="Name")
 #,'Rarity_common','Rarity_uncommon','Rarity_rare','Rarity_mythic']]
 X=df[['Seen', 'Games', 'Rarity_common', 'Rarity_uncommon', 'Rarity_mythic']]
 
-y=df['Frank']
+y=df['Final Grade']
 
 regressor = LGBMRegressor()  
 regressor.fit(X,y) #training the algorithm
@@ -79,7 +79,8 @@ gc = pygsheets.authorize(service_file='./Test.json')
 sh = gc.open('ArenaDraft')
 wks = sh[1]
 
-wks.set_dataframe(df.sort_values('Predicted Rating', ascending=False),(1,1))
+wks.set_dataframe(df[['Name', 'Color_x', 'Rarity','Seen', 'Games','Predicted Rating', 'Diff']
+].sort_values('Predicted Rating', ascending=False),(1,1))
 
 #print(regressor.coef_,X.columns)
 

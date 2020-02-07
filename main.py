@@ -30,12 +30,14 @@ df_k=pd.read_excel("./Karsten.xlsx")
 df_17lorig=pd.read_excel("./17lands.xlsx")
 df_17lorig=df_17lorig.replace("-", 0.4)
 
-datadf=df_17lorig.iloc[1::2]
-datadf=datadf.drop('Name',axis=1)
-carddf=df_17lorig.iloc[0::2]
-carddf=carddf['Name']
-datadf.index = datadf.index-1
-df_17l=pd.concat([carddf,datadf], axis=1)
+#datadf=df_17lorig.iloc[2::3]
+#datadf=datadf.shift(periods=1, axis='columns')
+#datadf.index = datadf.index-2
+#datadf=datadf.drop('Name',axis=1)
+#carddf=df_17lorig.iloc[0::3]
+#carddf=carddf['Name']
+
+df_17l=df_17lorig[df_17lorig['Name'].notnull()]
 
 df_17l["# Wins"] = df_17l['# Games'] * df_17l['Win Rate']
 df_17l["# Losses"] = df_17l['# Games'] * (1 - df_17l['Win Rate'])
@@ -56,7 +58,7 @@ df=pd.merge(df_k,df_17l,on="Name")
 #,'Rarity_common','Rarity_uncommon','Rarity_rare','Rarity_mythic']]
 X=df[['Seen', 'Games', 'Rarity_common', 'Rarity_uncommon', 'Rarity_mythic']]
 
-y=df['Final Grade']
+y=df['Frank']
 
 regressor = LGBMRegressor()  
 regressor.fit(X,y) #training the algorithm
